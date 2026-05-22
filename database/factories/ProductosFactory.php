@@ -20,6 +20,7 @@ class ProductosFactory extends Factory
         return [
             //
             'name' => $this->faker->words(3,true),
+            'category_id' => Categorias::all()->random()->id,
             'description' => $this->faker->text,
             'price' => $this->faker->numberBetween(1, 1000),
             'stock' => $this->faker->numberBetween(1, 100),

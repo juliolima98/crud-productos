@@ -4,17 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\Productos;
 use Illuminate\Http\Request;
+use App\Models\Categorias;
 
 class ProductosController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-        $productos = Productos::all();
-        return view('productos.index', compact('productos'));
+        $categorias = Categorias::where('is_active', true)->orderBy('name')->get();
+
+        $productos = Productos::with('categorias')
+            ->when($request->category_id, function ($query, $categoryId) {
+                $query->where('category_id', $categoryId);
+            })
+            ->get();
+
+        return view('productos.index', compact('productos', 'categorias'));
     }
 
     /**
@@ -23,7 +30,8 @@ class ProductosController extends Controller
     public function create()
     {
         //
-        return view('productos.create');
+        $categorias = Categorias::where('is_active', true)->orderBy('name')->get();
+        return view('productos.create', compact('categorias'));
     }
 
     /**
@@ -33,6 +41,7 @@ class ProductosController extends Controller
     {
         //
         $validatedData = $request->validate([
+            'category_id' => 'required|exists:categorias,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'price' => 'required|numeric|min:0',
@@ -42,7 +51,7 @@ class ProductosController extends Controller
 
         Productos::create($validatedData);
 
-        return redirect()->route('productos.index')->with('success','Producto creado exitosamente!');
+        return redirect()->route('productos.index')->with('success', 'Producto creado exitosamente!');
     }
 
     /**
@@ -60,7 +69,11 @@ class ProductosController extends Controller
     {
         //
         $producto = Productos::findOrFail($producto->id);
-        return view('productos.edit', compact('producto'));
+
+        //Busca las categorias activas y ordenadas alfabeticamente
+        $categorias = Categorias::where('is_active', true)->orderBy('name')->get();
+
+        return view('productos.edit', compact('producto', 'categorias'));
     }
 
     /**
@@ -70,6 +83,7 @@ class ProductosController extends Controller
     {
         //
         $validatedData = $request->validate([
+            'category_id' => 'required|exists:categorias,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
