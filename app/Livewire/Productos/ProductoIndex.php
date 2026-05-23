@@ -20,6 +20,13 @@ class ProductoIndex extends Component
     // Estas variables están atadas (data binding) a los inputs en la vista usando wire:model
     public string $search = '';
     public string $categoryId = '';
+    public string $name = '';
+    public string $description = '';
+    public string $price = '';
+    public int|string $stock = 0;
+    public bool $active = true;
+    public string $formCategoryId = '';
+    public ?int $editingId = null;
 
     /**
      * HOOKS DE CICLO DE VIDA (Lifecycle Hooks)
@@ -79,5 +86,68 @@ class ProductoIndex extends Component
             'productos' => $productos,
             'categorias' => $categorias,
         ]);
+    }
+
+    // MÉTODO SAVE PARA CREAR NUEVOS PRODUCTOS
+    public function save()
+    {
+        $data = $this->validate([
+            'formCategoryId' => 'nullable|exists:categorias,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'active' => 'boolean',
+        ]);
+
+        $payload = [
+            'category_id' => $data['formCategoryId'] ?: null,
+            'name' => $data['name'],
+            'description' => $data['description'],
+            'price' => $data['price'],
+            'stock' => $data['stock'],
+            'active' => $data['active'],
+        ];
+
+        if ($this->editingId) {
+            $producto = Productos::findOrFail($this->editingId);
+            $producto->update($payload);
+
+            session()->flash('success', 'Producto actualizado correctamente.');
+        } else {
+            Productos::create($payload);
+
+            session()->flash('success', 'Producto creado correctamente.');
+        }
+
+        $this->resetForm();
+    }
+
+    public function edit(Productos $producto)
+    {
+        $this->editingId = $producto->id;
+        $this->formCategoryId = $producto->category_id ?? '';
+        $this->name = $producto->name;
+        $this->description = $producto->description ?? '';
+        $this->price = $producto->price;
+        $this->stock = $producto->stock;
+        $this->active = (bool) $producto->active;
+    }
+
+    //Limpiar formulario
+    public function resetForm()
+    {
+        $this->reset([
+            'editingId',
+            'name',
+            'description',
+            'price',
+            'stock',
+            'active',
+            'formCategoryId',
+        ]);
+
+        $this->stock = 0;
+        $this->active = true;
     }
 }
