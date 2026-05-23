@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
     <!-- Custom CSS -->
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg mb-4">
         <div class="container">
@@ -26,6 +28,10 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('categorias.index') }}">Categorías</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('livewire.productos.producto-index') }}">Productos con
+                            Livewire</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -33,16 +39,28 @@
 
     <div class="container">
         @if(session('success'))
+            {{-- Mensaje de éxito global. Esto atrapa cualquier mensaje 'success' enviado mediante session()->flash() --}}
             <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
 
+        {{--
+        @yield('content'): Es el marcador para vistas tradicionales de Laravel (Blade).
+        Las vistas que extienden este layout inyectarán su código aquí.
+        --}}
         @yield('content')
+
+        {{--
+        {{ $slot }}: Es el marcador nativo que usan los componentes de Livewire (V3) por defecto.
+        El '??' evita que dé error si la variable no existe (ej. al cargar una vista normal de blade).
+        --}}
+        {{ $slot ?? '' }}
     </div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
