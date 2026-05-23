@@ -17,6 +17,10 @@ class ProductoIndex extends Component
     // Trait para usar paginación de Livewire sin recargar la página completa
     use WithPagination;
 
+    // PROPIEDAD DE PAGINACIÓN: Usa Bootstrap 5 para los enlaces de paginación en lugar de Tailwind CSS.
+    // ESTO EVITA EL PROBLEMA DE LOS ÍCONOS DE FLECHAS GIGANTES en la tabla.
+    protected $paginationTheme = 'bootstrap';
+
     // Estas variables están atadas (data binding) a los inputs en la vista usando wire:model
     public string $search = '';
     public string $categoryId = '';
@@ -88,9 +92,14 @@ class ProductoIndex extends Component
         ]);
     }
 
-    // MÉTODO SAVE PARA CREAR NUEVOS PRODUCTOS
+    /**
+     * MÉTODO SAVE: CREAR O ACTUALIZAR PRODUCTOS
+     * Se ejecuta al enviar el formulario (gracias al wire:submit.prevent="save").
+     */
     public function save()
     {
+        // 1. Validar los datos ingresados en el formulario.
+        // Si hay algún error, Livewire lo devuelve automáticamente a la vista para mostrarlo.
         $data = $this->validate([
             'formCategoryId' => 'nullable|exists:categorias,id',
             'name' => 'required|string|max:255',
@@ -123,6 +132,12 @@ class ProductoIndex extends Component
         $this->resetForm();
     }
 
+    /**
+     * MÉTODO EDIT: CARGAR DATOS AL FORMULARIO
+     * Se llama desde la tabla al hacer clic en "Editar".
+     * Carga el producto de la BD y llena las propiedades públicas,
+     * las cuales actualizan automáticamente los "wire:model" en la vista.
+     */
     public function edit(Productos $producto)
     {
         $this->editingId = $producto->id;
@@ -134,7 +149,10 @@ class ProductoIndex extends Component
         $this->active = (bool) $producto->active;
     }
 
-    //Limpiar formulario
+    /**
+     * MÉTODO RESET FORM: LIMPIAR EL FORMULARIO
+     * Devuelve las variables a su estado original después de guardar o cancelar.
+     */
     public function resetForm()
     {
         $this->reset([
